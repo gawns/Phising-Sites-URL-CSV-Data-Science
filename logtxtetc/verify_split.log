@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\Users\USER\Downloads\datasetttttt datasains\verify_split.py", line 17, in <module>
+    from secure_pipeline import (BASE_DIR, LABELS, load_clean_data, make_three_way_split,
+                                normalize_url, registrable_domain, sha256_file)
+  File "C:\Users\USER\Downloads\datasetttttt datasains\secure_pipeline.py", line 28, in <module>
+    import tldextract
+  File "C:\Users\USER\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\site-packages\tldextract\__init__.py", line 4, in <module>
+    from .tldextract import ExtractResult, TLDExtract, extract, update
+  File "C:\Users\USER\AppData\Local\hermes\tools\python-3.14.7+20260901-win32-x64\Lib\site-packages\tldextract\tldextract.py", line 46, in <module>
+    import idna
+ModuleNotFoundError: No module named 'idna'

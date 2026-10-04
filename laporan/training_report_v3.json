@@ -1,0 +1,151 @@
+{
+  "pipeline_version": "domain-grouped-v3",
+  "dataset": {
+    "rows_raw": 549346,
+    "rows_removed_invalid_label_or_empty_url": 1,
+    "conflicting_canonical_urls": 1,
+    "rows_removed_conflicting_canonical_urls": 3,
+    "duplicate_rows_removed_after_canonicalization": 47151,
+    "rows_clean": 502191,
+    "unique_hosts": 190147,
+    "unique_registrable_domain_groups": 152258,
+    "label_counts": {
+      "good": 392879,
+      "bad": 109312
+    },
+    "malformed_or_empty_host_rows": 791,
+    "sha256": "23a5800cb48c0950fe7af95f9bdef2a7782e87646facf14440c07aba578e8262"
+  },
+  "split": {
+    "train": {
+      "rows": 301315,
+      "bad_rate": 0.2177,
+      "domain_groups": 91377
+    },
+    "validation": {
+      "rows": 100439,
+      "bad_rate": 0.2177,
+      "domain_groups": 30391
+    },
+    "test": {
+      "rows": 100437,
+      "bad_rate": 0.2177,
+      "domain_groups": 30490
+    },
+    "overlap": {
+      "train_validation": 0,
+      "train_test": 0,
+      "validation_test": 0
+    }
+  },
+  "model_selection": [
+    {
+      "Model": "Logistic Regression",
+      "Stage": "validation",
+      "Fitur": "TF-IDF char n-gram",
+      "N": 100439,
+      "Precision (bad)": 0.7784,
+      "Recall (bad)": 0.9261,
+      "F1 (bad)": 0.8459,
+      "Akurasi": 0.9265,
+      "Balanced Accuracy": 0.9264,
+      "MCC": 0.8033,
+      "FP/100k": 5737.8,
+      "FN/100k": 1608.9,
+      "TN": 72813,
+      "FP": 5763,
+      "FN": 1616,
+      "TP": 20247,
+      "ROC-AUC": 0.9806,
+      "PR-AUC": 0.9505
+    },
+    {
+      "Model": "Naive Bayes",
+      "Stage": "validation",
+      "Fitur": "TF-IDF char n-gram",
+      "N": 100439,
+      "Precision (bad)": 0.8813,
+      "Recall (bad)": 0.8425,
+      "F1 (bad)": 0.8615,
+      "Akurasi": 0.941,
+      "Balanced Accuracy": 0.9055,
+      "MCC": 0.8243,
+      "FP/100k": 2471.2,
+      "FN/100k": 3428.0,
+      "TN": 76094,
+      "FP": 2482,
+      "FN": 3443,
+      "TP": 18420,
+      "ROC-AUC": 0.9786,
+      "PR-AUC": 0.9451
+    },
+    {
+      "Model": "Linear SVM",
+      "Stage": "validation",
+      "Fitur": "TF-IDF char n-gram",
+      "N": 100439,
+      "Precision (bad)": 0.8389,
+      "Recall (bad)": 0.922,
+      "F1 (bad)": 0.8785,
+      "Akurasi": 0.9445,
+      "Balanced Accuracy": 0.9364,
+      "MCC": 0.8442,
+      "FP/100k": 3853.1,
+      "FN/100k": 1698.5,
+      "TN": 74706,
+      "FP": 3870,
+      "FN": 1706,
+      "TP": 20157,
+      "ROC-AUC": 0.9849,
+      "PR-AUC": 0.9627
+    },
+    {
+      "Model": "Random Forest",
+      "Stage": "validation",
+      "Fitur": "Fitur buatan",
+      "N": 100439,
+      "Precision (bad)": 0.5533,
+      "Recall (bad)": 0.7665,
+      "F1 (bad)": 0.6427,
+      "Akurasi": 0.8145,
+      "Balanced Accuracy": 0.7972,
+      "MCC": 0.5344,
+      "FP/100k": 13469.9,
+      "FN/100k": 5082.7,
+      "TN": 65047,
+      "FP": 13529,
+      "FN": 5105,
+      "TP": 16758,
+      "ROC-AUC": 0.8771,
+      "PR-AUC": 0.7309
+    }
+  ],
+  "selected_model": "Linear SVM",
+  "final_test": {
+    "Model": "Linear SVM",
+    "Stage": "final_test",
+    "Fitur": "TF-IDF char n-gram",
+    "N": 100437,
+    "Precision (bad)": 0.935,
+    "Recall (bad)": 0.9057,
+    "F1 (bad)": 0.9201,
+    "Akurasi": 0.9658,
+    "Balanced Accuracy": 0.9441,
+    "MCC": 0.8985,
+    "FP/100k": 1371.0,
+    "FN/100k": 2052.0,
+    "TN": 77198,
+    "FP": 1377,
+    "FN": 2061,
+    "TP": 19801,
+    "ROC-AUC": 0.9915,
+    "PR-AUC": 0.977
+  },
+  "environment": {
+    "python": "3.14.7",
+    "pandas": "3.0.6",
+    "scikit_learn": "1.9.1",
+    "tldextract": "5.3.2"
+  },
+  "warning": "Prediksi statistik, bukan jaminan keamanan. Tidak ada temporal holdout karena dataset tidak memiliki timestamp."
+}
