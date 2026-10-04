@@ -1,0 +1,13 @@
+[project]
+name = "phishing-url-detector"
+version = "1.0.0"
+description = "Detektor URL phishing - TF-IDF char n-gram + model terbaik"
+requires-python = ">=3.13"
+
+# ---- Kunci deploy Vercel: entrypoint custom di py/web_app.py ----
+[tool.vercel]
+entrypoint = "py.web_app:Handler"
+
+[tool.vercel.functions]
+# Bias bundle function jadi kecil: model .joblib + data ringan saja
+include_files = ["phishing_model.joblib", "model_comparison.csv", "laporan/training_report_v3.json"]

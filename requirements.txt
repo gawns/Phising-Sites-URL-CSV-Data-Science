@@ -1,7 +1,11 @@
-pandas>=2.0
-numpy>=1.26
-scikit-learn>=1.4
+# --- Runtime web (Vercel) ---
+# Pin = versi lokal yang terbukti bisa memuat phishing_model.joblib
+joblib==1.6.0
+numpy==2.5.3
+pandas>=2.3,<3.1
+scikit-learn==1.9.1
+
+# --- Hanya untuk training lokal (di-import py/phishing_app.py, secure_pipeline.py) ---
 matplotlib>=3.8
 seaborn>=0.13
-joblib>=1.3
 tldextract>=5.0

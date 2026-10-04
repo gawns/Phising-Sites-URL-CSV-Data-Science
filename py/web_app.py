@@ -1,24 +1,27 @@
-"""Web app lokal untuk mendeteksi URL phishing.
-Jalankan: python web_app.py
-Buka: http://127.0.0.1:8000
+"""Web app deteksi URL phishing.
+
+Lokal : python py/web_app.py   -> http://127.0.0.1:8000
+Vercel: entrypoint py.web_app:Handler (lihat pyproject.toml)
 """
 import html
 import json
+import os
 import re
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))  # agar "from phishing_app" tetap ketemu saat dijalankan dari root
 import joblib
 import pandas as pd
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # agar "from phishing_app" ketemu saat dijalankan dari root
 from phishing_app import extract_features
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # root project (folder di atas py/)
 MODEL_PATH = BASE_DIR / "phishing_model.joblib"
 RESULT_PATH = BASE_DIR / "model_comparison.csv"
+REPORT_PATH = BASE_DIR / "laporan" / "training_report_v3.json"
 
 PAGE = """<!doctype html>
 <html lang="id">
@@ -43,39 +46,59 @@ PAGE = """<!doctype html>
 
 
 class Predictor:
-    def __init__(self):
-        if not MODEL_PATH.exists():
-            raise FileNotFoundError("Model belum tersedia. Jalankan: python phishing_app.py train")
-        self.bundle = joblib.load(MODEL_PATH)
+    def __init__(self, model_path):
+        self.model_path = model_path
+        self.bundle = None
+
+    def _load(self):
+        if self.bundle is None:
+            if not self.model_path.exists():
+                raise FileNotFoundError(
+                    f"Model tidak ditemukan di {self.model_path}. "
+                    "Jalankan training atau pastikan file phishing_model.joblib ikut ter-deploy."
+                )
+            self.bundle = joblib.load(self.model_path)  # lazy-load: aman untuk serverless (Vercel)
+        return self.bundle
 
     @property
     def name(self):
-        return self.bundle["name"]
+        return self._load()["name"]
 
     def predict(self, url):
+        bundle = self._load()
         original = url.strip()
         cleaned = re.sub(r"^https?://", "", original.lower())
-        if self.bundle["features"]:
+        if bundle["features"]:
             x = pd.DataFrame([extract_features(original.lower())])
         else:
-            x = self.bundle["vectorizer"].transform([cleaned])
-        prediction = int(self.bundle["model"].predict(x)[0])
+            x = bundle["vectorizer"].transform([cleaned])
+        prediction = int(bundle["model"].predict(x)[0])
         return {"url": original, "label": "bad" if prediction else "good", "phishing": bool(prediction)}
 
 
-PREDICTOR = Predictor()
+PREDICTOR = Predictor(MODEL_PATH)  # tidak memuat model saat import -> cold start Vercel tetap bisa jalan
 
 
 def comparison_table():
-    if not RESULT_PATH.exists():
-        return "<p>Hasil evaluasi belum tersedia.</p>"
-    df = pd.read_csv(RESULT_PATH)
-    headers = "".join(f"<th>{html.escape(str(c))}</th>" for c in df.columns)
-    rows = []
-    for _, row in df.iterrows():
-        cells = "".join(f"<td>{html.escape(str(v))}</td>" for v in row)
-        rows.append(f"<tr>{cells}</tr>")
-    return f"<div style='overflow:auto'><table><thead><tr>{headers}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
+    if RESULT_PATH.exists():
+        df = pd.read_csv(RESULT_PATH)
+        headers = "".join(f"<th>{html.escape(str(c))}</th>" for c in df.columns)
+        rows = []
+        for _, row in df.iterrows():
+            cells = "".join(f"<td>{html.escape(str(v))}</td>" for v in row)
+            rows.append(f"<tr>{cells}</tr>")
+        return f"<div style='overflow:auto'><table><thead><tr>{headers}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
+    if REPORT_PATH.exists():  # fallback: hasil evaluasi dari laporan training v3
+        data = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
+        candidates = data.get("model_selection", []) + ([data["final_test"]] if "final_test" in data else [])
+        cols = ["Model", "Fitur", "Precision (bad)", "Recall (bad)", "F1 (bad)", "Akurasi", "ROC-AUC"]
+        headers = "".join(f"<th>{html.escape(c)}</th>" for c in cols)
+        rows = []
+        for rec in candidates:
+            cells = "".join(f"<td>{html.escape(str(rec.get(c, '-')))}</td>" for c in cols)
+            rows.append(f"<tr>{cells}</tr>")
+        return f"<div style='overflow:auto'><table><thead><tr>{headers}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
+    return "<p>Hasil evaluasi belum tersedia.</p>"
 
 
 def render(raw=""):
@@ -132,7 +155,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    host, port = "127.0.0.1", 8000
+    host = "127.0.0.1"
+    port = int(os.environ.get("PORT", 8000))
     print(f"Phishing URL Detector berjalan di http://{host}:{port}")
     try:
         ThreadingHTTPServer((host, port), Handler).serve_forever()

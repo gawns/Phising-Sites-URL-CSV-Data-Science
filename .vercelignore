@@ -1,0 +1,9 @@
+# File berat yang tidak perlu di-bundle ke serverless function Vercel
+phishing_site_urls.csv
+phishing_site_urls_cleaned.csv
+_audit_clean_urls.csv
+logtxtetc/
+__pycache__/
+*.pyc
+run_web.bat
+.git/
